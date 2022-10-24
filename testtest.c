@@ -1,5 +1,3 @@
-
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,44 +68,47 @@ char **split_line(char *line)
     return split_lines;
 }
 
-void execute(char **args)
-{
-    pid_t child = fork();
-    if (child == 0)
-    {
-        execvp(args[0], args);
-        perror("Error: ");
-        exit(1);
-    }
-    else if (child > 0)
-    {
-        int status;
-        do
-        {
-            waitpid(child, &status, WUNTRACED);
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-    }
-    else
-    {
-        perror("Error: ");
-    }
-}
+
+
 int main()
 {
-    if(strcmp(args[0],"cd")==0){
-        change_dir(args[1]);
-        continue;
-    }
+
+
+    printf("This Shell is created by Mahir\n\n");
+    
     while (true)
     {
-        printf("This Shell is created by Mahir\n\n");
         printf("$ ");
         char *line = read_line();
         char **split_lines = split_line(line);
 
         if (split_lines[0] != NULL)
         {
-            execute(split_lines);
+            if(strcmp(split_lines[0],"cd")==0){
+                change_dir(split_lines[1]);
+                continue;
+            }
+            pid_t child = fork();
+
+            if (child == 0)
+            {
+                execvp(split_lines[0], args);
+                perror("Error: ");
+                exit(1);
+            }
+            else if (child > 0)
+            {
+                int status;
+                do
+                {
+                    waitpid(child, &status, WUNTRACED);
+                } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+            }
+            else
+            {
+                perror("Error: ");
+            }
+            
         }
 
         free(split_lines);
