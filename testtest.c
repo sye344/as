@@ -1,9 +1,39 @@
+
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+char cur_path[256];
+void change_dir(char *pth) {
+	int ret;
+	if (pth[0] == '.') {
+		getcwd(cur_path, sizeof(cur_path));
+		strcat(cur_path,"/");
+		strcat(cur_path,pth);
+		ret = chdir(cur_path);	
+	}
+	else if (pth[0] == '~') {
+		pth++;
+		char *cur_path = getenv("HOME");
+		strcat(cur_path, pth);
+		ret = chdir(cur_path);
+	}
+	else {
+		ret = chdir(pth);
+	}
+	if (ret == -1) {
+		printf("Invalid Path\n");
+	}
+	else {
+		char present[10001];
+		getcwd(present, sizeof(present));
+		printf("%s\n", present);
+	}
+}
 
 char *read_line()
 {
@@ -12,15 +42,7 @@ char *read_line()
     getline(&line, &bufferlength, stdin);
     return line;
 }
-void kash_cd(char **args) {
-    if (args[1] == NULL) {
-        fprintf(stderr, "kash: cd: missing argument\n");
-    } else {
-        if (chdir(args[1]) != 0) {
-            perror("kash: cd");
-        }
-    }
-}
+
 char **split_line(char *line)
 {
     int len = 0;
@@ -33,7 +55,7 @@ char **split_line(char *line)
     while (token != NULL)
     {
         split_lines[len] = token;
-        length++;
+        len++;
 
         if (len >= cap)
         {
@@ -44,15 +66,12 @@ char **split_line(char *line)
         token = strtok(NULL, del);
     }
 
-    split_lines[length] = NULL;
+    split_lines[len] = NULL;
     return split_lines;
 }
 
 void execute(char **args)
 {
-    if(args[0]=='cd'){
-        kash_cd(args);
-    }
     pid_t child = fork();
     if (child == 0)
     {
@@ -75,10 +94,14 @@ void execute(char **args)
 }
 int main()
 {
+    if(strcmp(args[0],"cd")==0){
+        change_dir(args[1]);
+        continue;
+    }
     while (true)
     {
-        printf("This Shell is created by Mahir\n\n")
-            printf("$ ");
+        printf("This Shell is created by Mahir\n\n");
+        printf("$ ");
         char *line = read_line();
         char **split_lines = split_line(line);
 
