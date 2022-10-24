@@ -5,65 +5,78 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-char* kash_read_line() {
+char *read_line()
+{
     char *line = NULL;
-    size_t buflen = 0;
-    getline(&line, &buflen, stdin);
+    size_t bufferlength = 0;
+    getline(&line, &bufferlength, stdin);
     return line;
 }
 
-char** kash_split_line(char *line) {
-    int length = 0;
-    int capacity = 16;
-    char **tokens = malloc(capacity * sizeof(char*));
+char **split_line(char *line)
+{
+    int len = 0;
+    int cap = 16;
+    char **split_lines = malloc(cap * sizeof(char *));
 
-    char *delimiters = " \t\r\n";
-    char *token = strtok(line, delimiters);
+    char *del = " \t\r\n";
+    char *token = strtok(line, del);
 
-    while (token != NULL) {
-        tokens[length] = token;
+    while (token != NULL)
+    {
+        split_lines[len] = token;
         length++;
 
-        if (length >= capacity) {
-            capacity = (int) (capacity * 1.5);
-            tokens = realloc(tokens, capacity * sizeof(char*));
+        if (len >= cap)
+        {
+            cap = (int)(cap * 1.5);
+            split_lines = realloc(split_lines, cap * sizeof(char *));
         }
 
-        token = strtok(NULL, delimiters);
+        token = strtok(NULL, del);
     }
 
-    tokens[length] = NULL;
-    return tokens;
+    split_lines[length] = NULL;
+    return split_lines;
 }
 
-
-void kash_exec(char **args) {
-    pid_t child_pid = fork();
-
-    if (child_pid == 0) {
+void execute(char **args)
+{
+    pid_t child = fork();
+    if (child == 0)
+    {
         execvp(args[0], args);
-        perror("kash");
+        perror("Error: ");
         exit(1);
-    } else if (child_pid > 0) {
+    }
+    else if (child > 0)
+    {
         int status;
-        do {
-            waitpid(child_pid, &status, WUNTRACED);
+        do
+        {
+            waitpid(child, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-    } else {
-        perror("kash");
+    }
+    else
+    {
+        perror("Error: ");
     }
 }
-int main() {
-    while (true) {
-        printf("> ");
-        char *line = kash_read_line();
-        char **tokens = kash_split_line(line);
+int main()
+{
+    while (true)
+    {
+        printf("This Shell is created by Mahir\n\n")
+            printf("$ ");
+        char *line = read_line();
+        char **split_lines = split_line(line);
 
-        if (tokens[0] != NULL) {
-            kash_exec(tokens);
+        if (split_lines[0] != NULL)
+        {
+            execute(split_lines);
         }
 
-        free(tokens);
+        free(split_lines);
         free(line);
     }
 }
