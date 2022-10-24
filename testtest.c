@@ -12,7 +12,15 @@ char *read_line()
     getline(&line, &bufferlength, stdin);
     return line;
 }
-
+void kash_cd(char **args) {
+    if (args[1] == NULL) {
+        fprintf(stderr, "kash: cd: missing argument\n");
+    } else {
+        if (chdir(args[1]) != 0) {
+            perror("kash: cd");
+        }
+    }
+}
 char **split_line(char *line)
 {
     int len = 0;
@@ -42,6 +50,9 @@ char **split_line(char *line)
 
 void execute(char **args)
 {
+    if(args[0]=='cd'){
+        kash_cd(args);
+    }
     pid_t child = fork();
     if (child == 0)
     {
