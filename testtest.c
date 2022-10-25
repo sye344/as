@@ -4,24 +4,23 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-char cur_path[256];
-void change_dir(char *pth) {
+char current[256];
+void cd(char *path) {
 	int ret;
-	if (pth[0] == '.') {
-		getcwd(cur_path, sizeof(cur_path));
-		strcat(cur_path,"/");
-		strcat(cur_path,pth);
-		ret = chdir(cur_path);	
+	if (path[0] == '.') {
+		getcwd(current, sizeof(current));
+		strcat(current,"/");
+		strcat(current,path);
+		ret = chdir(current);	
 	}
-	else if (pth[0] == '~') {
-		pth++;
-		char *cur_path = getenv("HOME");
-		strcat(cur_path, pth);
-		ret = chdir(cur_path);
+	else if (path[0] == '~') {
+		path++;
+		char *current = getenv("HOME");
+		strcat(current, path);
+		ret = chdir(current);
 	}
 	else {
-		ret = chdir(pth);
+		ret = chdir(path);
 	}
 	if (ret == -1) {
 		printf("Invalid Path\n");
@@ -32,15 +31,6 @@ void change_dir(char *pth) {
 		printf("%s\n", present);
 	}
 }
-
-char *read_line()
-{
-    char *line = NULL;
-    size_t bufferlength = 0;
-    getline(&line, &bufferlength, stdin);
-    return line;
-}
-
 char **split_line(char *line)
 {
     int len = 0;
@@ -67,25 +57,23 @@ char **split_line(char *line)
     split_lines[len] = NULL;
     return split_lines;
 }
-
-
-
 int main()
 {
 
-
-    printf("This Shell is created by Mahir\n\n");
+    printf("This Shell is created by Mahir\n");
     
     while (true)
     {
         printf("$ ");
-        char *line = read_line();
+        char *line = NULL;
+        size_t bufferlength = 0;
+        getline(&line, &bufferlength, stdin);
         char **split_lines = split_line(line);
 
         if (split_lines[0] != NULL)
         {
             if(strcmp(split_lines[0],"cd")==0){
-                change_dir(split_lines[1]);
+                cd(split_lines[1]);
                 continue;
             }
             pid_t child = fork();
