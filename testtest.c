@@ -80,7 +80,7 @@ int main()
 
             if (child == 0)
             {
-                execvp(split_lines[0], args);
+                execvp(split_lines[0], split_lines);
                 perror("Error: ");
                 exit(1);
             }
